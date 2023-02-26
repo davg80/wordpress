@@ -94,9 +94,9 @@ function monTheme_init() {
 /**
  * Actions
  */
-add_action('init', 'monTheme_init');
 add_action('after_setup_theme', 'monTheme_supports');
 add_action('wp_enqueue_scripts', 'monTheme_register_assets');
+add_action('init', 'monTheme_init');
 
 /**
  * Filter
@@ -106,5 +106,7 @@ add_filter('nav_menu_css_class', 'monTheme_menu_class');
 add_filter('nav_menu_link_attributes', 'monTheme_menu_link_class');
 
 require_once( 'metaboxes/sponsor.php' );
+require_once ('options/agence.php');
 SponsorMetaBox::register();
+AgenceMenuPage::register();
 
