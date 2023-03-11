@@ -1,0 +1,1 @@
+jQuery(".monTheme_datepicker").flatpickr({});

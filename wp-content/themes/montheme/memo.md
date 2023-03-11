@@ -504,3 +504,59 @@ class SponsorMetaBox
 - add_options_page -> nouvelle entrée réglages
 - add_menu_page -> nouvelle entrée dans le menu
 - add_submenu_page -> ajout d'un sous menu
+
+## Page courante
+- permet d'afficher des informations de la page courante
+```php
+        var_dump($suffix);die();
+//C:\wamp64\www\wordpress\wp-content\themes\montheme\options\agence.php:15:string 'settings_page_agence_options' (length=28)
+```
+ou
+
+```php
+ var_dump(get_current_screen());die();
+C:\wamp64\www\wordpress\wp-content\themes\montheme\options\agence.php:17:
+object(WP_Screen)[8263]
+  public 'action' => string '' (length=0)
+  public 'base' => string 'settings_page_agence_options' (length=28)
+  private 'columns' => int 0
+  public 'id' => string 'settings_page_agence_options' (length=28)
+  protected 'in_admin' => string 'site' (length=4)
+  public 'is_network' => boolean false
+  public 'is_user' => boolean false
+  public 'parent_base' => null
+  public 'parent_file' => null
+  public 'post_type' => string '' (length=0)
+  public 'taxonomy' => string '' (length=0)
+  private '_help_tabs' => 
+    array (size=0)
+      empty
+  private '_help_sidebar' => string '' (length=0)
+  private '_screen_reader_content' => 
+    array (size=0)
+      empty
+  private '_options' => 
+    array (size=0)
+      empty
+  private '_show_screen_options' => null
+  private '_screen_settings' => null
+  public 'is_block_editor' => boolean false
+```
+
+## Add column Image 
+```php
+add_filter( 'manage_bien_posts_columns', function ( $columns ) {
+	return [
+		'cb' => $columns['cb'],
+		'thumbnail' => 'Miniature',
+		'title' => $columns['title'],
+		'date' => $columns['date']
+	];
+} );
+
+add_filter('manage_bien_posts_custom_column', function($column, $postId){
+	if($column ==='thumbnail'){
+		the_post_thumbnail('thumbnail', $postId);
+	}
+}, 10, 2);
+```
