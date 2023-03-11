@@ -152,7 +152,7 @@ add_filter( 'manage_post_posts_custom_column', function ( $column, $postId ) {
 	}
 }, 10, 2 );
 
-//Intercept objet query
+//Intercept objet query for search
 /**
  * @param WP_Query $query
  *
@@ -182,3 +182,18 @@ function monTheme_query_vars($params){
 add_action('pre_get_posts', 'monTheme_pre_get_posts');
 // Gestion des paramètres
 add_filter('query_vars', 'monTheme_query_vars');
+
+
+//sidebar (admin/Apparence/widget)
+function monTheme_register_widget(): void {
+	register_sidebar([
+		'id' => 'homepage',
+		'name' => 'Sidebar Accueil',
+		'before_widget' => '<div class="p-4 %2$s" id="%1$s">',
+		'after_widget' => '</div>',
+		'before_title'   => '<h4 class="fst-italic">',
+		'after_title'    => "</h4>",
+	]);
+}
+
+add_action('widgets_init', 'monTheme_register_widget');
