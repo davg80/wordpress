@@ -183,9 +183,12 @@ add_action('pre_get_posts', 'monTheme_pre_get_posts');
 // Gestion des paramètres
 add_filter('query_vars', 'monTheme_query_vars');
 
+require_once 'widgets/YoutubeWidget.php';
 
 //sidebar (admin/Apparence/widget)
 function monTheme_register_widget(): void {
+	//Création de widget
+	register_widget(YoutubeWidget::class);
 	register_sidebar([
 		'id' => 'homepage',
 		'name' => 'Sidebar Accueil',
@@ -197,3 +200,4 @@ function monTheme_register_widget(): void {
 }
 
 add_action('widgets_init', 'monTheme_register_widget');
+
