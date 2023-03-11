@@ -560,3 +560,173 @@ add_filter('manage_bien_posts_custom_column', function($column, $postId){
 	}
 }, 10, 2);
 ```
+
+##  wp_query
+
+Add 3 articles wp_query qui n'est pas l'article courant
+- single-post.php
+- !!!! ATTENTION: 
+- wp_reset_postdata(); pour réinitialiser les choses et éviter les effets de bords
+- lorsque on utilise un boucle dans une autre boucle
+```php
+	<?php
+	$query = new WP_Query( [
+		'post__not_in' => [ get_the_ID() ],
+		'post_type' => 'post',
+		'posts_per_page' => 3
+	] );
+
+	?>
+```
+- Récupération des termes en fonction de l'id tennis = 6 => retourne les articles sport = 6  (taxonomies = catégoies)
+```php
+         // Find sport by id
+        $sports = array_map(function($term) {
+            return $term->term_id;
+        }, get_the_terms(get_post(), 'sport'));
+```
+- Récupération des articles qui ont que football en taxonomie
+```php
+		$query = new WP_Query( [
+			'post__not_in'   => [ get_the_ID() ],
+			'post_type'      => 'post',
+			'posts_per_page' => 3,
+			'tax_query' => [
+				[
+					'taxonomy' => 'sport',
+					'terms'    => $sports,
+				],
+			],
+		] );
+```
+- Récupération des articles qui ont que football et tennis en taxonomie
+```php
+		$query = new WP_Query( [
+			'post__not_in'   => [ get_the_ID() ],
+			'post_type'      => 'post',
+			'posts_per_page' => 3,
+			'tax_query' => [
+				[
+					'taxonomy' => 'sport',
+					'terms'    => $sports,
+					'operator' => 'AND'
+				],
+			],
+		] );
+```
+- Récupération des articles d'un sport donné aléatoirement en taxonomie
+```php
+			$query = new WP_Query( [
+			'post__not_in'   => [ get_the_ID() ],
+			'post_type'      => 'post',
+			'posts_per_page' => 3,
+            'orderby ' => 'rand',
+			'tax_query' => [
+				[
+					'taxonomy' => 'sport',
+					'terms'    => $sports,
+				],
+			],
+		] );
+```
+- Récupération des articles d'un sport donné aléatoirement en taxonomie et sponsorisé
+```php
+			// Find sport by id
+		$sports = array_map( function ( $term ) {
+			return $term->term_id;
+		}, get_the_terms( get_post(), 'sport' ) );
+
+		$query = new WP_Query( [
+			'post__not_in'   => [ get_the_ID() ],
+			'post_type'      => 'post',
+			'posts_per_page' => 3,
+			'orderby '       => 'rand',
+			'tax_query'      => [
+				[
+					'taxonomy' => 'sport',
+					'terms'    => $sports,
+				],
+			],
+			'meta_query'     => [
+				[
+					'key' => SponsorMetaBox::META_KEY,
+                    'compare' => 'EXISTS'
+				]
+			]
+		] );
+```
+
+## Altérer l'objet wp_query 
+- Se déclenche après la création de l'objet variable de requête, 
+- mais avant l'exécution de la requête réelle.
+
+```php
+//Intercept objet query
+/**
+ * @param WP_Query $query
+ *
+ */
+function monTheme_pre_get_posts(WP_Query $query): void {
+	if(is_admin() || !is_home() || !$query->is_main_query()){
+		return;
+	}
+	// http://localhost/wordpress/actualites/?sponsor=1
+	//	var_dump(get_query_var('sponsor'));die();
+	if(get_query_var('sponsor') === '1') {
+		$meta_query = $query->get('meta_query', []);
+		$meta_query[] = [
+			'key' => SponsorMetaBox::META_KEY,
+			'compare' => 'EXISTS'
+		];
+		$query->set('meta_query', $meta_query);
+	}
+}
+
+function monTheme_query_vars($params){
+//	var_dump($params);die();
+	$params[] = 'sponsor';
+	return $params;
+}
+
+add_action('pre_get_posts', 'monTheme_pre_get_posts');
+// Gestion des paramètres
+add_filter('query_vars', 'monTheme_query_vars');
+```
+
+## Filtres avancés
+- pre_get_posts pour pouvoir filtrer les choses
+- get_search_query() pour supporter de nouvelles requêtes au niveau de l'objet wp_query
+```php
+<?php get_header() ?>
+<form class="row gy-2 gx-3 align-items-center">
+    <div class="col-auto">
+        <input type="search" name="s" class="form-control" id="autoSizingInput" value="<?= get_search_query() ?>" placeholder="Votre recherche">
+    </div>
+    <div class="col-auto">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" name="sponsor" id="autoSizingCheck" <?= checked('1', get_query_var('sponsor')) ?>">
+            <label class="form-check-label" for="autoSizingCheck" >
+               Article sponsorisé seulement
+            </label>
+        </div>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </div>
+</form>
+<h1 class="mb-4">Résultat pour votre recherche "<?= get_search_query() ?>"</h1>
+<?php if (have_posts()): ?>
+	<div class="row mt-4">
+		<?php while (have_posts()): the_post() ?>
+			<div class="col-sm-4">
+				<?php  get_template_part('partials/card', 'post') ?>
+			</div>
+		<?php endwhile; ?>
+		<?php monTheme_pagination(); ?>
+	</div>
+<?php else: ?>
+	<h1>Pas d'articles</h1>
+<?php endif; ?>
+<?php get_footer() ?>
+
+```

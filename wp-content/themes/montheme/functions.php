@@ -152,3 +152,33 @@ add_filter( 'manage_post_posts_custom_column', function ( $column, $postId ) {
 	}
 }, 10, 2 );
 
+//Intercept objet query
+/**
+ * @param WP_Query $query
+ *
+ */
+function monTheme_pre_get_posts(WP_Query $query): void {
+	if(is_admin() || !is_search() || !$query->is_main_query()){
+		return;
+	}
+	// http://localhost/wordpress/actualites/?sponsor=1
+	//	var_dump(get_query_var('sponsor'));die();
+	if(get_query_var('sponsor') === '1') {
+		$meta_query = $query->get('meta_query', []);
+		$meta_query[] = [
+			'key' => SponsorMetaBox::META_KEY,
+			'compare' => 'EXISTS'
+		];
+		$query->set('meta_query', $meta_query);
+	}
+}
+
+function monTheme_query_vars($params){
+//	var_dump($params);die();
+	$params[] = 'sponsor';
+	return $params;
+}
+
+add_action('pre_get_posts', 'monTheme_pre_get_posts');
+// Gestion des paramètres
+add_filter('query_vars', 'monTheme_query_vars');

@@ -1,4 +1,4 @@
-<div class="card" style="width: 18rem;height: 450px;">
+<div class="card my-3" style="width: 18rem;height: 450px;">
 	<img src="<?php the_post_thumbnail_url('post-thumbnail'); ?>" class="card-img-top" alt="<?php the_title(); ?>">
 	<div class="card-body position-relative">
 		<h5 class="card-title"><?php the_title() ?></h5>
